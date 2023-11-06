@@ -49,10 +49,10 @@ def main(page: Page):
 
     page.add(
         Column([
-            Text("Cadastro de Usuário", size=30, weight="bold"),
-            ElevatedButton("Cadastro", on_click=showinput),
-            mytable,
-            inputcontent,
+        Text("Cadastro de Usuário", size=30, weight="bold"),
+        ElevatedButton("Cadastro", on_click=showinput),
+        mytable,
+        #inputcontent,
         ])
     )
 
