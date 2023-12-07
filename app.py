@@ -1,13 +1,28 @@
-from flask import Flask, render_template, redirect, url_for, request
+from flask import Flask, render_template, redirect, url_for, request, flash
 from flask_login import LoginManager, login_user, logout_user, current_user, UserMixin, login_required
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_mail import Mail, Message
+import random
+import string
+from dotenv import load_dotenv
+import os
+from datetime import datetime, timedelta
+import secrets
 
 app = Flask(__name__)
 app.secret_key = "your-secret-key"
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER')
+app.config['MAIL_PORT'] = 25
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USE_SSL'] = False
+app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
+app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
+
+mail = Mail(app)
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
@@ -76,6 +91,58 @@ def login():
 
         return redirect(url_for("user"))
 
+@app.route("/reset_password", methods=["GET", "POST"])
+def reset_password():
+    if request.method == "GET":
+        return render_template("reset_password.html")
+    elif request.method == "POST":
+        email = request.form.get("email")
+
+        # Verifica se o e-mail está associado a uma conta existente
+        user = User.query.filter_by(email=email).first()
+        if user:
+            # Gera um token de redefinição de senha
+            reset_token = ''.join(random.choices(string.ascii_letters + string.digits, k=32))
+            
+            # Salva o token no banco de dados
+            user.reset_password_token = reset_token
+            db.session.commit()
+
+            # Envia um e-mail ao usuário com o link de redefinição de senha
+            send_reset_password_email(user.email, reset_token)
+
+            flash("Um email com instruções para redefinir sua senha foi enviado.")
+        else:
+            flash("Este endereço de e-mail não está associado a uma conta.")
+
+        return redirect(url_for("login"))
+
+def send_reset_password_email(email, token):
+    msg = Message("Redefinir Senha", sender="ti@platinacsc.com.br", recipients=[email])
+    msg.body = f"Para redefinir sua senha, clique no link a seguir: {url_for('reset_password_confirm', token=token, _external=True)}"
+    mail.send(msg)
+
+@app.route("/reset_password_confirm/<token>", methods=["GET", "POST"])
+def reset_password_confirm(token):
+    user = User.query.filter_by(reset_password_token=token).first()
+
+    if user is None:
+        flash("Token inválido ou expirado.")
+        return redirect(url_for("login"))
+
+    if request.method == "GET":
+        return render_template("reset_password_confirm.html", token=token)
+    elif request.method == "POST":
+        password = request.form.get("password")
+
+        # Atualiza a senha e limpa o token de redefinição
+        user.set_password(password)
+        user.reset_password_token = None
+        db.session.commit()
+
+        flash("Senha redefinida com sucesso. Faça login com a nova senha.")
+        return redirect(url_for("login"))
+
 @app.route("/user")
 @login_required
 def user():
@@ -95,12 +162,22 @@ class User(db.Model, UserMixin):
     password_hash = db.Column(db.String(255), nullable=False)
     full_name = db.Column(db.String(255), nullable=True)  # Adicione esta linha
     department = db.Column(db.String(120), nullable=True)
+    reset_password_token = db.Column(db.String(32), nullable=True)
+    reset_password_token = db.Column(db.String(100), nullable=True)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+    
+    def generate_reset_token(self):
+        self.reset_password_token = secrets.token_urlsafe(20)
+        self.reset_password_token_expires = datetime.utcnow() + timedelta(hours=1)
+        db.session.commit()
+
+    def check_reset_token_validity(self):
+        return self.reset_password_token_expires > datetime.utcnow()
 
 @app.shell_context_processor
 def make_shell_context():
