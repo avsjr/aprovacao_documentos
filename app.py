@@ -1,5 +1,5 @@
 from flask import Flask, render_template, redirect, url_for, request
-from flask_login import LoginManager, login_user, logout_user, current_user, UserMixin
+from flask_login import LoginManager, login_user, logout_user, current_user, UserMixin, login_required
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -28,7 +28,9 @@ def load_user_from_request(request):
 
 # Rotas
 @app.route("/")
+@login_required
 def index():
+    # Lógica para a área do usuário
     return render_template("index.html")
 
 @app.route("/register", methods=["GET", "POST"])
@@ -41,8 +43,11 @@ def register():
         email = request.form.get("email")
         password = request.form.get("password")
 
+        # Ajuste para adicionar o campo username
+        username = email  # ou defina de acordo com a lógica desejada
+
         # Cria um novo usuário
-        user = User(full_name=full_name, department=department, email=email)
+        user = User(username=username, full_name=full_name, department=department, email=email)
         user.set_password(password)  # Hasheia a senha antes de salvar
         db.session.add(user)
         db.session.commit()
@@ -63,12 +68,19 @@ def login():
         # Tenta fazer o login do usuário
         user = User.query.filter_by(username=username).first()
         if user is None or not user.check_password(password):
-            return render_template("login.html", error="Usuário ou senha inválidos")
+            error_message = "Usuário ou senha inválidos"
+            return render_template("login.html", error=error_message)
 
         # Faz o login do usuário
         login_user(user)
 
-        return redirect(url_for("index"))
+        return redirect(url_for("user"))
+
+@app.route("/user")
+@login_required
+def user():
+    # Lógica para a área do usuário
+    return render_template("user.html")
 
 @app.route("/logout")
 def logout():
