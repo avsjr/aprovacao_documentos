@@ -1,12 +1,10 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <title>Aplicação Flask</title>
-</head>
-<body>
-    <h1>Aplicação Flask</h1>
+{% extends 'base.html' %}
+
+{% block title %}Página Inicial{% endblock %}
+
+{% block content %}
+    <h1>Bem-vindo à Página Inicial</h1>
+    <p>Esta é a página principal da sua aplicação Flask.</p>
     <a href="/login">Fazer login</a>
     <a href="/register">Cadastrar-se</a>
-</body>
-</html>
+{% endblock %}

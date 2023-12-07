@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Seu Título Aqui{% endblock %}</title>
+    <!-- Adicione seus links de CSS, scripts, etc. aqui -->
+</head>
+<body>
+    <header>
+        <h1>Seu Aplicativo</h1>
+        <!-- Adicione elementos do cabeçalho aqui, como uma barra de navegação -->
+    </header>
+
+    <div id="content">
+        {% block content %}{% endblock %}
+    </div>
+
+    <footer>
+        <!-- Adicione elementos do rodapé aqui -->
+    </footer>
+</body>
+</html>

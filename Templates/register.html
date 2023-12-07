@@ -1,7 +1,31 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <title>Cadastro de usuário</title>
-</head>
-<body
+{% extends 'base.html' %}
+
+{% block content %}
+  <h2>Registrar</h2>
+  <form method="POST" action="{{ url_for('register') }}">
+    <p>
+      Nome completo:<br>
+      <input type="text" name="full_name" required>
+    </p>
+    <p>
+      Departamento:<br>
+      <input type="text" name="department" required>
+    </p>
+    <p>
+      Email:<br>
+      <input type="email" name="email" required>
+    </p>
+    <p>
+      Senha:<br>
+      <input type="password" name="password" required>
+    </p>
+    <p>
+      Confirmar Senha:<br>
+      <input type="password" name="confirm_password" required>
+    </p>
+    <p>
+      <input type="submit" value="Registrar">
+    </p>
+  </form>
+  <p>Já tem uma conta? <a href="{{ url_for('login') }}">Faça login aqui</a>.</p>
+{% endblock %}
