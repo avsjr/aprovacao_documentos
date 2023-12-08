@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -10,7 +10,11 @@
 <body>
     <header>
         <h1>Seu Aplicativo</h1>
-        <!-- Adicione elementos do cabeçalho aqui, como uma barra de navegação -->
+        {% if current_user.is_authenticated %}
+            <p>Olá, {{ current_user.full_name }}! <a href="{{ url_for('logout') }}">Logout</a></p>
+        {% else %}
+            <!-- Adicione elementos do cabeçalho aqui, como uma barra de navegação -->
+        {% endif %}
     </header>
 
     <div id="content">

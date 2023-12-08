@@ -3,7 +3,16 @@
 {% block title %}Cadastro{% endblock %}
 
 {% block content %}
-  <h2>Registrar</h2>
+    <h2>Registrar</h2>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                    <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
   <form method="POST" action="{{ url_for('register') }}">
     <p>
       Nome completo:<br>
@@ -30,4 +39,14 @@
     </p>
   </form>
   <p>Já tem uma conta? <a href="{{ url_for('login') }}">Faça login aqui</a>.</p>
+{% endblock %}
+
+{% block navbar %}
+  <div class="navbar">
+    <!-- Outros itens da barra de navegação aqui -->
+
+    {% if current_user.is_authenticated %}
+      <a href="{{ url_for('logout') }}">Logout</a>
+    {% endif %}
+  </div>
 {% endblock %}

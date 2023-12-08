@@ -58,26 +58,33 @@ def register():
         email = request.form.get("email")
         password = request.form.get("password")
 
-        # Ajuste para adicionar o campo username
-        username = email  # ou defina de acordo com a lógica desejada
-
         # Cria um novo usuário
-        user = User(username=username, full_name=full_name, department=department, email=email)
+        user = User(full_name=full_name, department=department, email=email)
         user.set_password(password)  # Hasheia a senha antes de salvar
         db.session.add(user)
         db.session.commit()
 
-        # Faz o login do usuário
-        login_user(user)
+        # Envie um e-mail para o usuário
+        send_registration_email(user.email)
 
+        # Exibe uma mensagem de sucesso
+        flash("Cadastro realizado com sucesso! Um e-mail foi enviado para confirmação.", "success")
+
+        # Redireciona para a página inicial
         return redirect(url_for("index"))
+    
+def send_registration_email(email):
+    subject = "Cadastro realizado com sucesso!"
+    body = "Obrigado por se cadastrar no nosso aplicativo. Seu cadastro foi realizado com sucesso!"
+    msg = Message(subject, recipients=[email], body=body)
+    mail.send(msg)
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "GET":
         return render_template("login.html")
     elif request.method == "POST":
-        username = request.form.get("username")
+        username = request.form.get("email")
         password = request.form.get("password")
 
         # Tenta fazer o login do usuário
@@ -153,6 +160,11 @@ def user():
 def logout():
     logout_user()
     return redirect(url_for("index"))
+
+@app.route("/profile")
+@login_required
+def profile():
+    return render_template("profile.html")
 
 # Modelos
 class User(db.Model, UserMixin):

@@ -1,0 +1,8 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h2>Perfil do Usuário</h2>
+    <p>Nome: {{ current_user.full_name }}</p>
+    <p>Email: {{ current_user.email }}</p>
+    <!-- Adicione mais informações conforme necessário -->
+{% endblock %}
